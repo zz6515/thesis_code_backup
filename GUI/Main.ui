@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1183</width>
+    <height>755</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="sizeConstraint">
+       <enum>QLayout::SetDefaultConstraint</enum>
+      </property>
+      <property name="leftMargin">
+       <number>2</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>3</number>
+      </property>
+      <item>
+       <widget class="QTextEdit" name="showpanel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>300</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="html">
+         <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'SimSun'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;信息在此显示&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>300</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>标签名</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="objectname">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>300</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QWidget" name="widget_2" native="true">
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <layout class="QGridLayout" name="picture">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1183</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menudasdas">
+    <property name="title">
+     <string>文件</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="addfile"/>
+    <addaction name="action_7"/>
+    <addaction name="separator"/>
+    <addaction name="action_13"/>
+   </widget>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>预处理</string>
+    </property>
+    <addaction name="action_2"/>
+    <addaction name="actionNDVI"/>
+    <addaction name="action_3"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>采样</string>
+    </property>
+    <widget class="QMenu" name="menu_3">
+     <property name="title">
+      <string>深度学习样本</string>
+     </property>
+     <addaction name="action_17"/>
+     <addaction name="action_14"/>
+    </widget>
+    <widget class="QMenu" name="menu_7">
+     <property name="title">
+      <string>图像分类样本</string>
+     </property>
+     <widget class="QMenu" name="menu_8">
+      <property name="title">
+       <string>自动采样</string>
+      </property>
+      <addaction name="actiontxt"/>
+     </widget>
+     <widget class="QMenu" name="menu_9">
+      <property name="title">
+       <string>全要素分类</string>
+      </property>
+      <addaction name="action_9"/>
+      <addaction name="action_8"/>
+     </widget>
+     <addaction name="menu_9"/>
+     <addaction name="actionshp"/>
+     <addaction name="actionNDVI_2"/>
+     <addaction name="menu_8"/>
+     <addaction name="separator"/>
+    </widget>
+    <addaction name="menu_7"/>
+    <addaction name="menu_3"/>
+    <addaction name="separator"/>
+    <addaction name="action"/>
+    <addaction name="action_12"/>
+    <addaction name="separator"/>
+    <addaction name="action_15"/>
+   </widget>
+   <addaction name="menudasdas"/>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_2">
+   <property name="text">
+    <string>锐化</string>
+   </property>
+  </action>
+  <action name="actionNDVI">
+   <property name="text">
+    <string>NDVI</string>
+   </property>
+  </action>
+  <action name="action_3">
+   <property name="text">
+    <string>图像变化</string>
+   </property>
+  </action>
+  <action name="action_5">
+   <property name="text">
+    <string>影像剪裁</string>
+   </property>
+  </action>
+  <action name="action_8">
+   <property name="text">
+    <string>全栅格自动采集</string>
+   </property>
+  </action>
+  <action name="actionNDVI_2">
+   <property name="text">
+    <string>NDVI采样</string>
+   </property>
+  </action>
+  <action name="action_9">
+   <property name="text">
+    <string>手动跟踪数字化</string>
+   </property>
+  </action>
+  <action name="action_11">
+   <property name="text">
+    <string>开始采样</string>
+   </property>
+  </action>
+  <action name="action_12">
+   <property name="text">
+    <string>撤销标记</string>
+   </property>
+  </action>
+  <action name="action">
+   <property name="text">
+    <string>尺寸</string>
+   </property>
+  </action>
+  <action name="addfile">
+   <property name="text">
+    <string>打开</string>
+   </property>
+  </action>
+  <action name="action_7">
+   <property name="text">
+    <string>样本库</string>
+   </property>
+  </action>
+  <action name="action_4">
+   <property name="text">
+    <string>多边形</string>
+   </property>
+  </action>
+  <action name="action_10">
+   <property name="text">
+    <string>矩形</string>
+   </property>
+  </action>
+  <action name="actiontxt">
+   <property name="text">
+    <string>txt文件</string>
+   </property>
+  </action>
+  <action name="actionshp">
+   <property name="text">
+    <string>矢量掩膜采样</string>
+   </property>
+  </action>
+  <action name="action_6">
+   <property name="text">
+    <string>移动窗口</string>
+   </property>
+  </action>
+  <action name="action_13">
+   <property name="text">
+    <string>关闭</string>
+   </property>
+  </action>
+  <action name="actiondx">
+   <property name="text">
+    <string>dx</string>
+   </property>
+  </action>
+  <action name="actiona">
+   <property name="text">
+    <string>a</string>
+   </property>
+  </action>
+  <action name="actiona_2">
+   <property name="text">
+    <string>a</string>
+   </property>
+  </action>
+  <action name="action_14">
+   <property name="text">
+    <string>目标检测</string>
+   </property>
+  </action>
+  <action name="action_15">
+   <property name="text">
+    <string>样本测试</string>
+   </property>
+  </action>
+  <action name="action_17">
+   <property name="text">
+    <string>样本标注</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
