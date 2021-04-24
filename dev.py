@@ -8,7 +8,7 @@
     1.将proj.db文件所在路径加入系统变量中。
     2.安装GADL3.0以下的版本
 '''
-import sys, time, os
+import sys, time, os,re
 import xml.dom.minidom as minidom
 if hasattr(sys, 'frozen'):
     os.environ['PATH'] = sys._MEIPASS + ";" + os.environ[
@@ -261,7 +261,16 @@ class mainGUI(QMainWindow, GUI0):
     def addXml(self):
         self.getRecData()
         objectname = self.objectname.text()
-        CreateXML.createXML(os.path.split(self.path)[1],self.data.RasterXSize,self.data.RasterYSize,self.isThree(self.bandcount),objectname,self.xmlpoints)
+
+        res = re.findall(r"[\w']+", self.path)
+        xmlpath = ''
+        if 'trainval' in res:
+            xmlpath ='DIOR/trainval/'
+        elif 'train' in res:
+            xmlpath ='DIOR/train/'
+        else:
+            print("请从样本文件夹打开样本进行标注")
+        CreateXML.createXML(xmlpath,os.path.split(self.path)[1],self.data.RasterXSize,self.data.RasterYSize,self.isThree(self.bandcount),objectname,self.xmlpoints)
     def read_file(self):
         '''
         加载图像函数
@@ -455,7 +464,6 @@ class mainGUI(QMainWindow, GUI0):
         注：
             两个开源库cv2和gdal对影像的处理能力略有不同，加载数据较大的影像时选择gdal库剪裁为较优选。
         '''
-        self.tif_driver_path = 'DIOR/'
         self.showpanel.append("当前操作--Image Clip，请等待--------------------------------")
         if self.noPictureWarn() == False:
             return
@@ -469,22 +477,30 @@ class mainGUI(QMainWindow, GUI0):
         if self.noPictureWarn() == False:
             return
 
-        self.clip(self.tif_driver_path)
+        self.clip()
 
         self.showpanel.append("Image Clip success")
         self.clearpoints()
-    def clip(self,tif_driver_path):
+    def clip(self):
         band1 = self.data.GetRasterBand(1)
-
-        for xmin, ymin in self.points:
+        valve = round(len(self.points) * 0.8)  #切分样本，区分为train和val
+        for index,point in enumerate(self.points):
+            xmin, ymin = point
             self.image_count += 1
             num = self.isThree(self.bandcount)
-            out_dataset_tif = self.tif_driver.Create(
-                tif_driver_path + 'tif/' + str(self.image_count) + '.tif',
-                self.image_size, self.image_size, self.bandcount, band1.DataType)
 
-            out_dataset_jpg = self.tif_driver.Create(
-                tif_driver_path + 'train/JPEGImages/' + str(self.image_count) + '.jpg',
+            if index<=valve:
+                self.tif_driver_path = 'DIOR/train/'
+                out_dataset_jpg = self.tif_driver.Create(
+                    self.tif_driver_path + 'JPEGImages/' + str(self.image_count) + '.jpg',
+                    self.image_size, self.image_size, self.bandcount, band1.DataType)
+            else:
+                self.tif_driver_path = 'DIOR/trainval/'
+                out_dataset_jpg = self.tif_driver.Create(
+                    self.tif_driver_path + 'JPEGImages/' + str(self.image_count) + '.jpg',
+                    self.image_size, self.image_size, self.bandcount, band1.DataType)
+
+            out_dataset_tif = self.tif_driver.Create('DIOR/tif/' + str(self.image_count) + '.tif',
                 self.image_size, self.image_size, num, band1.DataType)
             top_left_x = self.geotransform[0] + xmin * self.geotransform[1]
             top_left_y = self.geotransform[3] + ymin * self.geotransform[5]

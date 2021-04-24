@@ -1,6 +1,6 @@
 from xml.dom import minidom
 import os
-def createXML(_filename,_width,_height,_depth,_name,data):
+def createXML(filepath,_filename,_width,_height,_depth,_name,data):
     dom = minidom.Document()
     annotation = dom.createElement('annotation')
 
@@ -78,7 +78,7 @@ def createXML(_filename,_width,_height,_depth,_name,data):
 
     xmlname = os.path.splitext(_filename)[0]
     try:
-        with open('DIOR/train/Annotations/'+xmlname+'.xml', 'w', encoding='UTF-8') as fh:
+        with open(filepath+'Annotations/'+xmlname+'.xml', 'w', encoding='UTF-8') as fh:
             dom.writexml(fh, indent='', addindent='\t', newl='\n', encoding='UTF-8')
             print('OK')
     except Exception as err:
