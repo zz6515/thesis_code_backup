@@ -189,12 +189,6 @@ p, li { white-space: pre-wrap; }
      <property name="title">
       <string>图像分类样本</string>
      </property>
-     <widget class="QMenu" name="menu_8">
-      <property name="title">
-       <string>自动采样</string>
-      </property>
-      <addaction name="actiontxt"/>
-     </widget>
      <widget class="QMenu" name="menu_9">
       <property name="title">
        <string>全要素分类</string>
@@ -204,8 +198,6 @@ p, li { white-space: pre-wrap; }
      </widget>
      <addaction name="menu_9"/>
      <addaction name="actionshp"/>
-     <addaction name="actionNDVI_2"/>
-     <addaction name="menu_8"/>
      <addaction name="separator"/>
     </widget>
     <addaction name="menu_7"/>
@@ -214,7 +206,6 @@ p, li { white-space: pre-wrap; }
     <addaction name="action"/>
     <addaction name="action_12"/>
     <addaction name="separator"/>
-    <addaction name="action_15"/>
    </widget>
    <addaction name="menudasdas"/>
    <addaction name="menu"/>

@@ -409,14 +409,14 @@ class mainGUI(QMainWindow, GUI0):
 
         for xmin, ymin in self.points:
             self.image_count += 1
-
+            num = self.isThree(self.bandcount)
             out_dataset_tif = self.tif_driver.Create(
                 tif_driver_path + 'tif/' + str(self.image_count) + '.tif',
-                self.image_size, self.image_size, self.isThree(self.bandcount), band1.DataType)
+                self.image_size, self.image_size, self.bandcount, band1.DataType)
 
             out_dataset_jpg = self.tif_driver.Create(
                 tif_driver_path + 'train/JPEGImages/' + str(self.image_count) + '.jpg',
-                self.image_size, self.image_size, self.isThree(self.bandcount), band1.DataType)
+                self.image_size, self.image_size, num, band1.DataType)
             top_left_x = self.geotransform[0] + xmin * self.geotransform[1]
             top_left_y = self.geotransform[3] + ymin * self.geotransform[5]
             dst_transform = (top_left_x, self.geotransform[1], self.geotransform[2], top_left_y, self.geotransform[4],
@@ -426,15 +426,19 @@ class mainGUI(QMainWindow, GUI0):
             out_dataset_jpg.SetGeoTransform(dst_transform)  # 设置裁剪出来图的原点坐标
             out_dataset_jpg.SetProjection(self.projection)  # 设置SRS属性（投影信息）
 
-            num = self.isThree(self.bandcount)
+
             for i in range(num):
                 bandnum = i+1
                 band = self.data.GetRasterBand(bandnum)
                 out_band = band.ReadAsArray(xmin, ymin, self.image_size, self.image_size)
-                out_dataset_tif.GetRasterBand(bandnum).WriteArray(out_band)
                 out_dataset_jpg.GetRasterBand(bandnum).WriteArray(out_band)
-                out_dataset_tif.FlushCache()  # 将缓存写入磁盘
                 out_dataset_jpg.FlushCache()  # 将缓存写入磁盘
+            for i in range(self.bandcount):
+                bandnum = i + 1
+                band = self.data.GetRasterBand(bandnum)
+                out_band = band.ReadAsArray(xmin, ymin, self.image_size, self.image_size)
+                out_dataset_tif.GetRasterBand(bandnum).WriteArray(out_band)
+                out_dataset_tif.FlushCache()  # 将缓存写入磁盘
             del out_dataset_tif
             del out_dataset_jpg
 
