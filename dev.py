@@ -18,7 +18,7 @@ import numpy as np
 import math
 from osgeo import gdal, ogr, osr, gdal_array  # 地理及遥感数据运算的核心开源库。
 from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtCore import Qt, QPoint, QPointF, QLine, QLineF, QRect, QRectF, QTime, qrand
+from PyQt5.QtCore import Qt, QPoint, QPointF, QLine, QLineF, QRect, QRectF, QTime, qrand,QDir
 from PyQt5.QtGui import QImage, QPixmap, QPainter, QBrush, QPen, QColor, QRadialGradient, QPainterPath, QPicture, \
     QPolygonF, QPolygon
 from PyQt5.QtWidgets import QAction, QWidget, QPushButton, QApplication, QMessageBox, QFileDialog, QGraphicsScene, \
@@ -102,6 +102,68 @@ class mainGUI(QMainWindow, GUI0):
 
         self.tif_driver = gdal.GetDriverByName("GTiff")
         self.tif_driver_path = ''
+
+        self.file_paths = []  # 文件列表
+        self.file_index = 0  # 文件索引
+        self.pre.clicked.connect(self.btn_pre_clicked)
+        self.next.clicked.connect(self.btn_next_clicked)
+        self.folder.clicked.connect(self.btn_folder_clicked)
+        self.mark.clicked.connect(self.on_btn_mark)
+    def btn_folder_clicked(self):
+            cur_dir = QDir.currentPath()  # 获取当前文件夹路径
+            # 选择文件夹
+            dir_path = QFileDialog.getExistingDirectory(self, '打开文件夹', cur_dir)
+
+            # 读取文件夹文件
+            self.file_paths.clear()
+            for root, dirs, files in os.walk(dir_path, topdown=False):
+                for file in files:
+                    self.file_paths.append(os.path.join(root, file))
+
+            print(self.file_paths)
+            if len(self.file_paths) <= 0:
+                return
+
+            # 获取第一个文件
+            self.file_index = 0
+            cur_path = self.file_paths[self.file_index]
+
+            # 处理文件
+            self.read_show(cur_path)
+    def btn_pre_clicked(self):
+        self.scene_update()
+        # 文件索引减 1
+        self.file_index -= 1
+        if self.file_index < 0:
+            self.file_index = 0
+
+        if len(self.file_paths) <= 0 or self.file_index >= len(self.file_paths):
+            return
+
+        # 当前路径
+        cur_path = self.file_paths[self.file_index]
+        self.read_show(cur_path)
+    def scene_update(self):
+        items = self.scene.items()
+        if len(items) != 0:  # 加载新的图像时，移除原图元
+            for item in items:
+                QApplication.processEvents()
+                self.scene.removeItem(item)
+
+    def btn_next_clicked(self):
+        self.scene_update()
+        # 文件索引累加 1
+        self.file_index += 1
+        if self.file_index >= len(self.file_paths):
+            self.file_index = len(self.file_paths) - 1
+
+        if len(self.file_paths) <= 0 or self.file_index >= len(self.file_paths):
+            return
+
+        cur_path = self.file_paths[self.file_index]
+        self.read_show(cur_path)
+
+
     def isThree(self,bandcount):
         if bandcount ==1:
             return 1
@@ -135,7 +197,7 @@ class mainGUI(QMainWindow, GUI0):
             self.clearpoints()
 
         if qaction.text() == "样本标注":
-            self.addXml()
+            self.on_btn_mark()
         if qaction.text() == "矢量掩膜采样":
             try:
                 self.read_current_file()
@@ -153,7 +215,9 @@ class mainGUI(QMainWindow, GUI0):
         pos = event.pos()
         item = self.view.itemAt(pos)
         return item
-
+    def on_btn_mark(self):
+        self.addXml()
+        self.clearpoints()
 
     def item_clicked(self, event):
         if event.button() == Qt.RightButton:  # 判断鼠标右键点击
@@ -202,12 +266,18 @@ class mainGUI(QMainWindow, GUI0):
         '''
         加载图像函数
         '''
+        self.clearpoints()
         self.path, filetype = QFileDialog.getOpenFileName(self, "选取文件", "./", "All Files(*)")
         self.current_file_name = os.path.splitext(os.path.split(self.path)[1])[0]
+
         if self.errorFormatWarn1() == False:  # 处理异常
             return
+        self.read_show(self.path)
+    def read_show(self,path):
+        self.path = path
+        self.current_file_name = os.path.splitext(os.path.split(path)[1])[0]
         try:
-            dataset = gdal.Open(self.path, gdal.GA_ReadOnly)
+            dataset = gdal.Open(path, gdal.GA_ReadOnly)
             self.data = dataset
             self.projection = dataset.GetProjection()
             self.geotransform = dataset.GetGeoTransform()
@@ -239,13 +309,12 @@ class mainGUI(QMainWindow, GUI0):
         if len(items) != 0:  # 加载新的图像时，移除原图元
             for item in items:
                 self.scene.removeItem(item)
+        QApplication.processEvents()
         frame = QImage(img, x, y, QImage.Format_RGB888)
         pix = QPixmap.fromImage(frame)
         self.item.setPixmap(pix)  # 创建图元
-        # self.item.setTransformOriginPoint(QPointF(0,0))
         self.scene.setSceneRect(0, 0, x, y)
         self.scene.addItem(self.item)
-
     def read_current_file(self):
         '''
         加载已有的文件，如矢量shp格式文件或txt文件
@@ -662,6 +731,7 @@ class mainGUI(QMainWindow, GUI0):
         清除已记录点
         '''
         self.points.clear()
+        self.xmlpoints.clear()
         self.showpanel.append("采样点已清空")
         self.image_count = 0
     def errorFormatWarn1(self):

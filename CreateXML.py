@@ -1,7 +1,7 @@
 from xml.dom import minidom
-dom = minidom.Document()
 import os
 def createXML(_filename,_width,_height,_depth,_name,data):
+    dom = minidom.Document()
     annotation = dom.createElement('annotation')
 
     filename = dom.createElement('filename')
