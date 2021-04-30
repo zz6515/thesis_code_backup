@@ -142,8 +142,8 @@ p, li { white-space: pre-wrap; }
       </item>
       <item>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
-         <widget class="QPushButton" name="folder">
+        <item row="2" column="0">
+         <widget class="QPushButton" name="next">
           <property name="maximumSize">
            <size>
             <width>100</width>
@@ -151,7 +151,7 @@ p, li { white-space: pre-wrap; }
            </size>
           </property>
           <property name="text">
-           <string>文件夹</string>
+           <string>下一个</string>
           </property>
          </widget>
         </item>
@@ -168,8 +168,8 @@ p, li { white-space: pre-wrap; }
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QPushButton" name="next">
+        <item row="0" column="0">
+         <widget class="QPushButton" name="folder">
           <property name="maximumSize">
            <size>
             <width>100</width>
@@ -177,12 +177,12 @@ p, li { white-space: pre-wrap; }
            </size>
           </property>
           <property name="text">
-           <string>下一个</string>
+           <string>文件夹</string>
           </property>
          </widget>
         </item>
         <item row="0" column="1" rowspan="3">
-         <widget class="QPushButton" name="mark">
+         <widget class="QPushButton" name="btn_mark">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
@@ -192,17 +192,44 @@ p, li { white-space: pre-wrap; }
           <property name="minimumSize">
            <size>
             <width>90</width>
-            <height>45</height>
+            <height>80</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>90</width>
-            <height>45</height>
+            <height>80</height>
            </size>
           </property>
           <property name="text">
-           <string>标注</string>
+           <string>深度学习
+标注</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2" rowspan="3">
+         <widget class="QPushButton" name="btn_classification">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>90</width>
+            <height>80</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>90</width>
+            <height>80</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>图像分类
+标注</string>
           </property>
          </widget>
         </item>
@@ -278,30 +305,24 @@ p, li { white-space: pre-wrap; }
     <property name="title">
      <string>采样</string>
     </property>
-    <widget class="QMenu" name="menu_3">
-     <property name="title">
-      <string>深度学习样本</string>
-     </property>
-     <addaction name="action_17"/>
-     <addaction name="action_14"/>
-    </widget>
     <widget class="QMenu" name="menu_7">
      <property name="title">
-      <string>图像分类样本</string>
+      <string>影像剪裁</string>
      </property>
-     <widget class="QMenu" name="menu_9">
-      <property name="title">
-       <string>全要素分类</string>
-      </property>
-      <addaction name="action_9"/>
-      <addaction name="action_8"/>
-     </widget>
-     <addaction name="menu_9"/>
+     <addaction name="action_9"/>
+     <addaction name="action_8"/>
      <addaction name="actionshp"/>
      <addaction name="separator"/>
     </widget>
+    <widget class="QMenu" name="menu_4">
+     <property name="title">
+      <string>样本标注</string>
+     </property>
+     <addaction name="action_16"/>
+     <addaction name="action_18"/>
+    </widget>
     <addaction name="menu_7"/>
-    <addaction name="menu_3"/>
+    <addaction name="menu_4"/>
     <addaction name="separator"/>
     <addaction name="action"/>
     <addaction name="action_12"/>
@@ -334,7 +355,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="action_8">
    <property name="text">
-    <string>全栅格自动采集</string>
+    <string>全栅格自动剪裁</string>
    </property>
   </action>
   <action name="actionNDVI_2">
@@ -389,7 +410,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionshp">
    <property name="text">
-    <string>矢量掩膜采样</string>
+    <string>矢量掩膜剪裁</string>
    </property>
   </action>
   <action name="action_6">
@@ -427,9 +448,14 @@ p, li { white-space: pre-wrap; }
     <string>样本测试</string>
    </property>
   </action>
-  <action name="action_17">
+  <action name="action_16">
    <property name="text">
-    <string>样本标注</string>
+    <string>深度学习</string>
+   </property>
+  </action>
+  <action name="action_18">
+   <property name="text">
+    <string>图像分类</string>
    </property>
   </action>
  </widget>

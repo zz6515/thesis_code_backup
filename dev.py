@@ -75,6 +75,8 @@ class mainGUI(QMainWindow, GUI0):
         self.image_size = 800
         self.block_size = 800
         self.points = []
+        self.classification_points= []
+        self.classification_name = []
         self.xmlpoints= []
         self.detection_data = []
 
@@ -108,7 +110,11 @@ class mainGUI(QMainWindow, GUI0):
         self.pre.clicked.connect(self.btn_pre_clicked)
         self.next.clicked.connect(self.btn_next_clicked)
         self.folder.clicked.connect(self.btn_folder_clicked)
-        self.mark.clicked.connect(self.on_btn_mark)
+        self.btn_mark.clicked.connect(self.on_btn_mark)
+        self.btn_mark.setShortcut('Ctrl+Q')
+        self.btn_classification.setShortcut('Ctrl+W')
+        self.btn_classification.clicked.connect(self.on_btn_classification)
+
     def btn_folder_clicked(self):
             cur_dir = QDir.currentPath()  # 获取当前文件夹路径
             # 选择文件夹
@@ -149,7 +155,6 @@ class mainGUI(QMainWindow, GUI0):
             for item in items:
                 QApplication.processEvents()
                 self.scene.removeItem(item)
-
     def btn_next_clicked(self):
         self.scene_update()
         # 文件索引累加 1
@@ -162,7 +167,6 @@ class mainGUI(QMainWindow, GUI0):
 
         cur_path = self.file_paths[self.file_index]
         self.read_show(cur_path)
-
 
     def isThree(self,bandcount):
         if bandcount ==1:
@@ -184,10 +188,10 @@ class mainGUI(QMainWindow, GUI0):
                                                                                  int(self.sFC.green.currentIndex()),
                                                                                  int(self.sFC.blue.currentIndex())))
             self.sFC.show()
-        if qaction.text() == "手动跟踪数字化":
+        if qaction.text() == "手动跟踪自动化":
             self.getRecData()
             self.gdalClip()
-        if qaction.text() == "全栅格自动采集":
+        if qaction.text() == "全栅格自动剪裁":
             self.windowMove = windowMove()
             self.block_size = self.windowMove.returnwidth()
             self.windowMove.btn_WindowMove.clicked.connect(
@@ -196,9 +200,9 @@ class mainGUI(QMainWindow, GUI0):
         if qaction.text() == "撤销标记":
             self.clearpoints()
 
-        if qaction.text() == "样本标注":
+        if qaction.text() == "深度学习":
             self.on_btn_mark()
-        if qaction.text() == "矢量掩膜采样":
+        if qaction.text() == "矢量掩膜剪裁":
             try:
                 self.read_current_file()
                 self.exec_clipWithShp()
@@ -209,6 +213,8 @@ class mainGUI(QMainWindow, GUI0):
             self.size = size()
             self.size.btn_Size.clicked.connect(lambda: self.func_setSize(int(self.size.value.text())))
             self.size.show()
+        if qaction.text() == '图像分类':
+            self.classification()
 
     def get_item_at_click(self, event):
         """ 获取点击位置的图元，无则返回None. """
@@ -216,9 +222,21 @@ class mainGUI(QMainWindow, GUI0):
         item = self.view.itemAt(pos)
         return item
     def on_btn_mark(self):
-        self.addXml()
-        self.clearpoints()
-
+        try:
+            self.addXml()
+            self.points.clear()
+            self.xmlpoints.clear()
+            self.showpanel.append("采样点已清空")
+        except:
+            self.showpanel.append("当前不可进行该操作")
+            return
+    def on_btn_classification(self):
+        try:
+            self.classification()
+            self.clearpoints()
+        except:
+            self.showpanel.append("当前不可进行该操作")
+            return
     def item_clicked(self, event):
         if event.button() == Qt.RightButton:  # 判断鼠标右键点击
             self._current_rect_item = QtWidgets.QGraphicsRectItem()
@@ -251,6 +269,19 @@ class mainGUI(QMainWindow, GUI0):
             self.item.mouseMoveEvent = QGraphicsItem.mouseMoveEvent
             self.item.mouseReleaseEvent = QGraphicsItem.mouseReleaseEvent           #左键点击时，应再次取消重写的Press和Release函数
             self.update()
+        if event.button() ==Qt.MidButton:
+            self.item.mouseMoveEvent = QGraphicsItem.mouseMoveEvent
+            self.item.mouseReleaseEvent = QGraphicsItem.mouseReleaseEvent
+            e = event.scenePos()
+
+            theX = int(e.x())
+            theY = int(e.y())
+            lon = self.geotransform[0] + e.x() * self.geotransform[1]
+            lat = self.geotransform[3] + e.y() * self.geotransform[5]
+            self.classification_points.append((lon, lat))
+            self.classification_name.append(self.objectname.text())
+            pen = QPen(Qt.red, 5)
+            self.scene.addRect(theX - 2, theY - 2, 4, 4, pen)
     def item_move(self, event):
         if self._current_rect_item is not None:
             r = QtCore.QRectF(self._start, event.scenePos()).normalized()
@@ -641,12 +672,102 @@ class mainGUI(QMainWindow, GUI0):
         self.showpanel.append("以上序号成功剪裁")
         self.clearpoints()
 
-    def createShpAndClip(self):
+    # def createShpAndClip(self):
+    #     '''
+    #     主要执行功能：
+    #         用户自行圈定采样位置，并根据用户点击的位置自动生成栅格与矢量配套采样组。
+    #     '''
+    #     self.showpanel.append("当前操作--createShpAndClip，请等待--------------------------------")
+    #     if self.noPictureWarn() == False:
+    #         return
+    #
+    #     # 处理异常
+    #     try:
+    #         dataset = gdal.Open(self.path, gdal.GA_ReadOnly)
+    #     except:
+    #         self.showpanel.append("非栅格影像，无法使用该功能")
+    #         return
+    #     if self.noPictureWarn() == False:
+    #         return
+    #     driver = ogr.GetDriverByName("ESRI Shapefile")  # shp驱动器
+    #     projection = dataset.GetProjection()
+    #     geotransform = dataset.GetGeoTransform()
+    #     top_left_x = geotransform[0]  # 左上角x坐标
+    #     horizon_pixel_resolution = geotransform[1]  # 东西方向像素分辨率
+    #     top_left_y = geotransform[3]  # 左上角y坐标
+    #     vertical_pixel_resolution = geotransform[5]  # 南北方向像素分辨率
+    #     # gdal中的坐标系方式不同于笛卡尔
+    #     # print("地理坐标 = ({}, {})\n像素等级 = ({}, {})\n影像大小 = ({}, {})\n投影= {}".format(top_left_x, top_left_y,horizon_pixel_resolution, vertical_pixel_resolution,dataset.RasterYSize,dataset.RasterXSize, projection))
+    #     band1 = dataset.GetRasterBand(1)
+    #     band2 = dataset.GetRasterBand(2)
+    #     band3 = dataset.GetRasterBand(3)
+    #     # 剪裁框大小
+    #     newSpatialRef = osr.SpatialReference()
+    #     newSpatialRef.ImportFromWkt(projection)
+    #     ring = ogr.Geometry(ogr.wkbLinearRing)
+    #     for x, y in self.points:
+    #         self.image_count+=1
+    #         spatial_top_left_x = top_left_x + x * horizon_pixel_resolution
+    #         spatial_top_left_y = top_left_y + y * vertical_pixel_resolution
+    #         ring.AddPoint(spatial_top_left_x, spatial_top_left_y)
+    #     ring.CloseRings()
+    #
+    #     usersdefinedshp = ogr.Geometry(ogr.wkbPolygon)
+    #     usersdefinedshp.AddGeometry(ring)
+    #
+    #     usersdefinedshp_extent = usersdefinedshp.GetEnvelope()
+    #
+    #     click_self.points_darray = np.array(self.points)
+    #     xmin = int(min(click_self.points_darray[:, 0]))
+    #     xmax = int(max(click_self.points_darray[:, 0]))
+    #     ymin = int(min(click_self.points_darray[:, 1]))
+    #     ymax = int(max(click_self.points_darray[:, 1]))
+    #     self.block_size = int(xmax - xmin)
+    #     self.block_size = int(ymax - ymin)
+    #     self.showpanel.append("envelope:{}".format(usersdefinedshp_extent) + "\nclick_darray:{}".format(
+    #         click_self.points_darray) + "\nxmin,xmax,ymin,ymax:{},{},{},{}".format(xmin, xmax, ymin,
+    #                                                                                ymax) + "\nblockx,blocky:{},{}".format(
+    #         self.block_size, self.block_size))
+    #     # 创建矢量
+    #     createV = 'DIOR/shp/' + str(self.image_count) + '.shp'  # 新建矢量名称
+    #     out_datasetV = driver.CreateDataSource(createV)
+    #     newlayer = out_datasetV.CreateLayer('test', geom_type=ogr.wkbPolygon, srs=newSpatialRef)
+    #     fieldDefn = ogr.FieldDefn('id', ogr.OFTString)
+    #     fieldDefn.SetWidth(8)
+    #     newlayer.CreateField(fieldDefn)
+    #     featureDefn = newlayer.GetLayerDefn()
+    #     newfeature = ogr.Feature(featureDefn)
+    #     newfeature.SetGeometry(usersdefinedshp)
+    #     newfeature.SetField('id', str(self.points[0][0]) + '-' + str(self.points[0][1]))
+    #     newlayer.CreateFeature(newfeature)
+    #     out_datasetV.Destroy()
+    #     self.showpanel.append("create shp Successfully")
+    #     # 创建栅格
+    #     out_band1 = band1.ReadAsArray(xmin, ymin, self.block_size, self.block_size)
+    #     out_band2 = band2.ReadAsArray(xmin, ymin, self.block_size, self.block_size)
+    #     out_band3 = band3.ReadAsArray(xmin, ymin, self.block_size, self.block_size)
+    #
+    #     out_dataset = self.tif_driver.Create('DIOR/tif/' + str(self.image_count) + '.tif',
+    #                                     self.block_size, self.block_size, 3, band1.DataType)
+    #     # 将计算后的值组装为一个元组，以方便设置
+    #     dst_transform = (
+    #         usersdefinedshp_extent[0], geotransform[1], geotransform[2], usersdefinedshp_extent[3], geotransform[4],
+    #         geotransform[5])
+    #     out_dataset.SetGeoTransform(dst_transform)
+    #     out_dataset.SetProjection(dataset.GetProjection())
+    #     out_dataset.GetRasterBand(1).WriteArray(out_band1)
+    #     out_dataset.GetRasterBand(2).WriteArray(out_band2)
+    #     out_dataset.GetRasterBand(3).WriteArray(out_band3)
+    #     out_dataset.FlushCache()
+    #     del out_dataset
+    #     self.showpanel.append("create shp and clip successful")
+    #     self.clearpoints()
+    def classification(self):
         '''
         主要执行功能：
-            用户自行圈定采样位置，并根据用户点击的位置自动生成栅格与矢量配套采样组。
+            用户在底图上标注点位，生成shp文件，便于之后进行图像分类
         '''
-        self.showpanel.append("当前操作--createShpAndClip，请等待--------------------------------")
+        self.showpanel.append("当前操作  生成感兴趣区域点位矢量文件，请等待--------")
         if self.noPictureWarn() == False:
             return
 
@@ -660,77 +781,35 @@ class mainGUI(QMainWindow, GUI0):
             return
         driver = ogr.GetDriverByName("ESRI Shapefile")  # shp驱动器
         projection = dataset.GetProjection()
-        geotransform = dataset.GetGeoTransform()
-        top_left_x = geotransform[0]  # 左上角x坐标
-        horizon_pixel_resolution = geotransform[1]  # 东西方向像素分辨率
-        top_left_y = geotransform[3]  # 左上角y坐标
-        vertical_pixel_resolution = geotransform[5]  # 南北方向像素分辨率
-        # gdal中的坐标系方式不同于笛卡尔
-        # print("地理坐标 = ({}, {})\n像素等级 = ({}, {})\n影像大小 = ({}, {})\n投影= {}".format(top_left_x, top_left_y,horizon_pixel_resolution, vertical_pixel_resolution,dataset.RasterYSize,dataset.RasterXSize, projection))
-        band1 = dataset.GetRasterBand(1)
-        band2 = dataset.GetRasterBand(2)
-        band3 = dataset.GetRasterBand(3)
-        # 剪裁框大小
+
+        out_datasetV = driver.CreateDataSource('Classification/Point.shp')
         newSpatialRef = osr.SpatialReference()
         newSpatialRef.ImportFromWkt(projection)
-        ring = ogr.Geometry(ogr.wkbLinearRing)
-        for x, y in self.points:
-            self.image_count+=1
-            spatial_top_left_x = top_left_x + x * horizon_pixel_resolution
-            spatial_top_left_y = top_left_y + y * vertical_pixel_resolution
-            ring.AddPoint(spatial_top_left_x, spatial_top_left_y)
-        ring.CloseRings()
+        layer = out_datasetV.CreateLayer("Point", newSpatialRef, ogr.wkbPoint)  ## 图层名称要与shp名称一致
+        field_name = ogr.FieldDefn("Name", ogr.OFTString)  ## 设置属性
+        field_name.SetWidth(20)  ## 设置长度
+        layer.CreateField(field_name)  ## 创建字段
+        field_Longitude = ogr.FieldDefn("Longitude", ogr.OFTReal)  ## 设置属性
+        layer.CreateField(field_Longitude)  ## 创建字段
+        field_Latitude = ogr.FieldDefn("Latitude", ogr.OFTReal)  ## 设置属性
+        layer.CreateField(field_Latitude)  ## 创建字段
+        for i in range(len(self.classification_points)):
+            lon, lat = self.classification_points[i]
+            tempname = self.classification_name[i]
 
-        usersdefinedshp = ogr.Geometry(ogr.wkbPolygon)
-        usersdefinedshp.AddGeometry(ring)
+            feature = ogr.Feature(layer.GetLayerDefn())
+            feature.SetField("Name", tempname)  ## 设置字段值
+            feature.SetField("Longitude", str(lon))  ## 设置字段值
+            feature.SetField("Latitude", str(lat))  ## 设置字段值
+            wkt = "POINT(%f %f)" % (float(lon), float(lat))  ## 创建点
+            point = ogr.CreateGeometryFromWkt(wkt)  ## 生成点
+            feature.SetGeometry(point)  ## 设置点
+            layer.CreateFeature(feature)  ## 添加点
 
-        usersdefinedshp_extent = usersdefinedshp.GetEnvelope()
-
-        click_self.points_darray = np.array(self.points)
-        xmin = int(min(click_self.points_darray[:, 0]))
-        xmax = int(max(click_self.points_darray[:, 0]))
-        ymin = int(min(click_self.points_darray[:, 1]))
-        ymax = int(max(click_self.points_darray[:, 1]))
-        self.block_size = int(xmax - xmin)
-        self.block_size = int(ymax - ymin)
-        self.showpanel.append("envelope:{}".format(usersdefinedshp_extent) + "\nclick_darray:{}".format(
-            click_self.points_darray) + "\nxmin,xmax,ymin,ymax:{},{},{},{}".format(xmin, xmax, ymin,
-                                                                                   ymax) + "\nblockx,blocky:{},{}".format(
-            self.block_size, self.block_size))
-        # 创建矢量
-        createV = 'DIOR/shp/' + str(self.image_count) + '.shp'  # 新建矢量名称
-        out_datasetV = driver.CreateDataSource(createV)
-        newlayer = out_datasetV.CreateLayer('test', geom_type=ogr.wkbPolygon, srs=newSpatialRef)
-        fieldDefn = ogr.FieldDefn('id', ogr.OFTString)
-        fieldDefn.SetWidth(8)
-        newlayer.CreateField(fieldDefn)
-        featureDefn = newlayer.GetLayerDefn()
-        newfeature = ogr.Feature(featureDefn)
-        newfeature.SetGeometry(usersdefinedshp)
-        newfeature.SetField('id', str(self.points[0][0]) + '-' + str(self.points[0][1]))
-        newlayer.CreateFeature(newfeature)
         out_datasetV.Destroy()
-        self.showpanel.append("create shp Successfully")
-        # 创建栅格
-        out_band1 = band1.ReadAsArray(xmin, ymin, self.block_size, self.block_size)
-        out_band2 = band2.ReadAsArray(xmin, ymin, self.block_size, self.block_size)
-        out_band3 = band3.ReadAsArray(xmin, ymin, self.block_size, self.block_size)
-
-        out_dataset = self.tif_driver.Create('DIOR/tif/' + str(self.image_count) + '.tif',
-                                        self.block_size, self.block_size, 3, band1.DataType)
-        # 将计算后的值组装为一个元组，以方便设置
-        dst_transform = (
-            usersdefinedshp_extent[0], geotransform[1], geotransform[2], usersdefinedshp_extent[3], geotransform[4],
-            geotransform[5])
-        out_dataset.SetGeoTransform(dst_transform)
-        out_dataset.SetProjection(dataset.GetProjection())
-        out_dataset.GetRasterBand(1).WriteArray(out_band1)
-        out_dataset.GetRasterBand(2).WriteArray(out_band2)
-        out_dataset.GetRasterBand(3).WriteArray(out_band3)
-        out_dataset.FlushCache()
-        del out_dataset
-        self.showpanel.append("create shp and clip successful")
+        self.showpanel.append("成功  矢量文件已生成--------")
         self.clearpoints()
+
     def clipWithShp(self,xmin, ymin, out_dataset, num, size1, size2):
         for i in range(num):
             bandnum = i + 1
@@ -746,10 +825,13 @@ class mainGUI(QMainWindow, GUI0):
         '''
         清除已记录点
         '''
+        self.scene_update()
+        self.classification_name.clear()
+        self.classification_points.clear()
         self.points.clear()
         self.xmlpoints.clear()
         self.showpanel.append("采样点已清空")
-        self.image_count = 0
+        # self.image_count = 0   #不可清空序号，以防止载入新的图像后，对已经剪裁好的图像进行覆盖
     def errorFormatWarn1(self):
         '''
         自定义函数处理异常--载入影像格式异常
