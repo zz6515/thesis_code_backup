@@ -240,7 +240,7 @@ class mainGUI(QMainWindow, GUI0):
     def item_clicked(self, event):
         if event.button() == Qt.RightButton:  # 判断鼠标右键点击
             self._current_rect_item = QtWidgets.QGraphicsRectItem()
-            pen = QPen(Qt.red, 5)
+            pen = QPen(Qt.red, 1)
             self._current_rect_item.setPen(pen)
             self._current_rect_item.setFlag(QtWidgets.QGraphicsItem.ItemStacksBehindParent, False)
             self._current_rect_item.setZValue(10)
@@ -280,7 +280,7 @@ class mainGUI(QMainWindow, GUI0):
             lat = self.geotransform[3] + e.y() * self.geotransform[5]
             self.classification_points.append((lon, lat))
             self.classification_name.append(self.objectname.text())
-            pen = QPen(Qt.red, 5)
+            pen = QPen(Qt.red, 1)
             self.scene.addRect(theX - 2, theY - 2, 4, 4, pen)
     def item_move(self, event):
         if self._current_rect_item is not None:
@@ -300,7 +300,7 @@ class mainGUI(QMainWindow, GUI0):
         elif 'train' in res:
             xmlpath ='DIOR/train/'
         else:
-            print("请从样本文件夹打开样本进行标注")
+            self.showpanel.append("请从样本文件夹打开样本进行标注")
         CreateXML.createXML(xmlpath,os.path.split(self.path)[1],self.data.RasterXSize,self.data.RasterYSize,self.isThree(self.bandcount),objectname,self.xmlpoints)
     def read_file(self):
         '''
@@ -310,10 +310,11 @@ class mainGUI(QMainWindow, GUI0):
         self.path, filetype = QFileDialog.getOpenFileName(self, "选取文件", "./", "All Files(*)")
         self.current_file_name = os.path.splitext(os.path.split(self.path)[1])[0]
 
-        if self.errorFormatWarn1() == False:  # 处理异常
-            return
+        # if self.errorFormatWarn1() == False:  # 处理异常
+        #     return
         self.read_show(self.path)
     def read_show(self,path):
+        outpath=''
         self.path = path
         self.current_file_name = os.path.splitext(os.path.split(path)[1])[0]
         try:
@@ -326,7 +327,9 @@ class mainGUI(QMainWindow, GUI0):
             return
         self.bandcount = dataset.RasterCount
 
+
         if self.bandcount ==1:
+            outpath = self.path
             img = cv.imread("{}".format(outpath),cv.IMREAD_GRAYSCALE)  # 读取图像
         elif self.bandcount > 3:
             outpath = self.formatConverse(self.path)
@@ -436,7 +439,7 @@ class mainGUI(QMainWindow, GUI0):
        图像预处理：
            假彩色处理（图像变换），对已加载的影像进行假彩色合成处理,用户可自定义红绿蓝三通道分别选取何种波段。
         '''
-        self.showpanel.append("当前操作--假彩色变换，请等待--------------------------------")
+        self.showpanel.append("当前操作--图像变换，请等待--------------------------------")
         if self.noPictureWarn() == False:  # 处理异常
             return
         path = self.path
@@ -453,7 +456,7 @@ class mainGUI(QMainWindow, GUI0):
         pix = QPixmap.fromImage(frame)
         self.item.setPixmap(pix)
         self.scene.addItem(self.item)
-        self.showpanel.append("standard fake color over")  # 通知栏打印结果
+        self.showpanel.append("成功")  # 通知栏打印结果
 
     def sharpen(self):
         '''
@@ -672,96 +675,6 @@ class mainGUI(QMainWindow, GUI0):
         self.showpanel.append("以上序号成功剪裁")
         self.clearpoints()
 
-    # def createShpAndClip(self):
-    #     '''
-    #     主要执行功能：
-    #         用户自行圈定采样位置，并根据用户点击的位置自动生成栅格与矢量配套采样组。
-    #     '''
-    #     self.showpanel.append("当前操作--createShpAndClip，请等待--------------------------------")
-    #     if self.noPictureWarn() == False:
-    #         return
-    #
-    #     # 处理异常
-    #     try:
-    #         dataset = gdal.Open(self.path, gdal.GA_ReadOnly)
-    #     except:
-    #         self.showpanel.append("非栅格影像，无法使用该功能")
-    #         return
-    #     if self.noPictureWarn() == False:
-    #         return
-    #     driver = ogr.GetDriverByName("ESRI Shapefile")  # shp驱动器
-    #     projection = dataset.GetProjection()
-    #     geotransform = dataset.GetGeoTransform()
-    #     top_left_x = geotransform[0]  # 左上角x坐标
-    #     horizon_pixel_resolution = geotransform[1]  # 东西方向像素分辨率
-    #     top_left_y = geotransform[3]  # 左上角y坐标
-    #     vertical_pixel_resolution = geotransform[5]  # 南北方向像素分辨率
-    #     # gdal中的坐标系方式不同于笛卡尔
-    #     # print("地理坐标 = ({}, {})\n像素等级 = ({}, {})\n影像大小 = ({}, {})\n投影= {}".format(top_left_x, top_left_y,horizon_pixel_resolution, vertical_pixel_resolution,dataset.RasterYSize,dataset.RasterXSize, projection))
-    #     band1 = dataset.GetRasterBand(1)
-    #     band2 = dataset.GetRasterBand(2)
-    #     band3 = dataset.GetRasterBand(3)
-    #     # 剪裁框大小
-    #     newSpatialRef = osr.SpatialReference()
-    #     newSpatialRef.ImportFromWkt(projection)
-    #     ring = ogr.Geometry(ogr.wkbLinearRing)
-    #     for x, y in self.points:
-    #         self.image_count+=1
-    #         spatial_top_left_x = top_left_x + x * horizon_pixel_resolution
-    #         spatial_top_left_y = top_left_y + y * vertical_pixel_resolution
-    #         ring.AddPoint(spatial_top_left_x, spatial_top_left_y)
-    #     ring.CloseRings()
-    #
-    #     usersdefinedshp = ogr.Geometry(ogr.wkbPolygon)
-    #     usersdefinedshp.AddGeometry(ring)
-    #
-    #     usersdefinedshp_extent = usersdefinedshp.GetEnvelope()
-    #
-    #     click_self.points_darray = np.array(self.points)
-    #     xmin = int(min(click_self.points_darray[:, 0]))
-    #     xmax = int(max(click_self.points_darray[:, 0]))
-    #     ymin = int(min(click_self.points_darray[:, 1]))
-    #     ymax = int(max(click_self.points_darray[:, 1]))
-    #     self.block_size = int(xmax - xmin)
-    #     self.block_size = int(ymax - ymin)
-    #     self.showpanel.append("envelope:{}".format(usersdefinedshp_extent) + "\nclick_darray:{}".format(
-    #         click_self.points_darray) + "\nxmin,xmax,ymin,ymax:{},{},{},{}".format(xmin, xmax, ymin,
-    #                                                                                ymax) + "\nblockx,blocky:{},{}".format(
-    #         self.block_size, self.block_size))
-    #     # 创建矢量
-    #     createV = 'DIOR/shp/' + str(self.image_count) + '.shp'  # 新建矢量名称
-    #     out_datasetV = driver.CreateDataSource(createV)
-    #     newlayer = out_datasetV.CreateLayer('test', geom_type=ogr.wkbPolygon, srs=newSpatialRef)
-    #     fieldDefn = ogr.FieldDefn('id', ogr.OFTString)
-    #     fieldDefn.SetWidth(8)
-    #     newlayer.CreateField(fieldDefn)
-    #     featureDefn = newlayer.GetLayerDefn()
-    #     newfeature = ogr.Feature(featureDefn)
-    #     newfeature.SetGeometry(usersdefinedshp)
-    #     newfeature.SetField('id', str(self.points[0][0]) + '-' + str(self.points[0][1]))
-    #     newlayer.CreateFeature(newfeature)
-    #     out_datasetV.Destroy()
-    #     self.showpanel.append("create shp Successfully")
-    #     # 创建栅格
-    #     out_band1 = band1.ReadAsArray(xmin, ymin, self.block_size, self.block_size)
-    #     out_band2 = band2.ReadAsArray(xmin, ymin, self.block_size, self.block_size)
-    #     out_band3 = band3.ReadAsArray(xmin, ymin, self.block_size, self.block_size)
-    #
-    #     out_dataset = self.tif_driver.Create('DIOR/tif/' + str(self.image_count) + '.tif',
-    #                                     self.block_size, self.block_size, 3, band1.DataType)
-    #     # 将计算后的值组装为一个元组，以方便设置
-    #     dst_transform = (
-    #         usersdefinedshp_extent[0], geotransform[1], geotransform[2], usersdefinedshp_extent[3], geotransform[4],
-    #         geotransform[5])
-    #     out_dataset.SetGeoTransform(dst_transform)
-    #     out_dataset.SetProjection(dataset.GetProjection())
-    #     out_dataset.GetRasterBand(1).WriteArray(out_band1)
-    #     out_dataset.GetRasterBand(2).WriteArray(out_band2)
-    #     out_dataset.GetRasterBand(3).WriteArray(out_band3)
-    #     out_dataset.FlushCache()
-    #     del out_dataset
-    #     self.showpanel.append("create shp and clip successful")
-    #     self.clearpoints()
     def classification(self):
         '''
         主要执行功能：
@@ -863,13 +776,13 @@ class mainGUI(QMainWindow, GUI0):
         projection = dataset.GetProjection()
         geotransform = dataset.GetGeoTransform()
         data = dataset.ReadAsArray(0, 0, dataset.RasterXSize, dataset.RasterYSize)
-        if 'int8' in data.dtype.name:
+        if 'int8' or 'uint8' in data.dtype.name:
             datatype = gdal.GDT_Byte
         elif 'int16' in data.dtype.name:
             datatype = gdal.GDT_UInt16
         else:
             datatype = gdal.GDT_Float32
-
+        print("format:"+data.dtype.name)
 
         bands, height, width = data.shape
         driver = gdal.GetDriverByName("GTiff")  # 数据类型必须有，因为要计算需要多大内存空间
