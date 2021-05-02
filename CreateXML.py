@@ -9,8 +9,13 @@ def createXML(filepath,_filename,_width,_height,_depth,_name,data):
     filename.appendChild(filename_text)
     source = dom.createElement('source')
     database = dom.createElement('database')
-    database_text = dom.createTextNode('DIOR')
+    database_text = dom.createTextNode('The VOC2007 Database')
     database.appendChild(database_text)
+
+	sub_annotation = dom.createElement('annotation')
+    sub_annotation_text = dom.createTextNode('PASCAL VOC2007')
+    sub_annotation.appendChild(sub_annotation_text)
+	source.appendChild(sub_annotation)
     source.appendChild(database)
 
     size = dom.createElement('size')
