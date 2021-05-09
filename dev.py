@@ -188,10 +188,10 @@ class mainGUI(QMainWindow, GUI0):
                                                                                  int(self.sFC.green.currentIndex()),
                                                                                  int(self.sFC.blue.currentIndex())))
             self.sFC.show()
-        if qaction.text() == "手动跟踪自动化":
+        if qaction.text() == "裁剪":
             self.getRecData()
             self.gdalClip()
-        if qaction.text() == "全栅格自动剪裁":
+        if qaction.text() == "窗口滑动":
             self.windowMove = windowMove()
             self.block_size = self.windowMove.returnwidth()
             self.windowMove.btn_WindowMove.clicked.connect(
@@ -202,7 +202,7 @@ class mainGUI(QMainWindow, GUI0):
 
         if qaction.text() == "深度学习":
             self.on_btn_mark()
-        if qaction.text() == "矢量掩膜剪裁":
+        if qaction.text() == "矢量掩膜":
             try:
                 self.read_current_file()
                 self.exec_clipWithShp()
